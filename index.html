@@ -1,1 +1,200 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yamanlar OS | Ultra Elite v19.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon: #bc13fe; --cyber: #00d4ff; --bg: #000; --font: 'JetBrains Mono', monospace; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); scroll-behavior: smooth; }
+        body { background: var(--bg); color: #fff; overflow: hidden; -webkit-font-smoothing: antialiased; }
+        #matrix { position: fixed; inset: 0; z-index: -1; opacity: 0.12; transform: translateZ(0); }
+
+        /* --- MÜHÜRLÜ GİRİŞ (DOKUNULMAZ & PERFORMANSLI) --- */
+        #loader {
+            position: fixed; inset: 0; z-index: 10000;
+            background: radial-gradient(circle at center, #10021a 0%, #000 100%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .auth-h { font-size: 1.3rem; letter-spacing: 12px; margin-bottom: 50px; text-shadow: 0 0 20px var(--neon); color: #fff; }
+        .p-wrap { width: 450px; position: relative; }
+        .p-frame { width: 100%; height: 2px; background: rgba(255,255,255,0.05); }
+        .p-bar { width: 0%; height: 100%; background: var(--neon); box-shadow: 0 0 20px var(--neon), 0 0 5px #fff; position: relative; will-change: width; }
+        .p-bar::after { content: ''; position: absolute; right: -4px; top: -5px; width: 12px; height: 12px; background: #fff; border-radius: 50%; box-shadow: 0 0 20px #fff, 0 0 40px var(--neon); }
+        #console { margin-top: 40px; width: 450px; height: 100px; font-size: 0.7rem; color: #555; border-left: 2px solid var(--neon); padding-left: 15px; overflow: hidden; line-height: 1.8; }
+
+        /* --- ANA SİTE (ULTRA ELITE) --- */
+        #site { display: none; opacity: 0; transform: scale(1.05); transition: all 1s cubic-bezier(0.23, 1, 0.32, 1); }
+
+        header {
+            position: fixed; top: 0; width: 100%; height: 80px;
+            display: flex; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(188, 19, 254, 0.15); z-index: 100;
+        }
+        .nav-grp { display: flex; gap: 60px; }
+        .nav-box { position: relative; }
+        .nav-link { color: #999; text-decoration: none; font-size: 0.8rem; font-weight: 800; letter-spacing: 4px; transition: 0.4s; cursor: pointer; padding: 30px 0; display: block; }
+        .nav-box:hover .nav-link { color: var(--neon); text-shadow: 0 0 15px var(--neon); }
+
+        .drop {
+            position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(15px);
+            width: 260px; background: rgba(10, 2, 18, 0.95); border: 1px solid var(--neon);
+            opacity: 0; visibility: hidden; transition: 0.3s; padding: 8px 0; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+        .nav-box:hover .drop { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+        .drop-item { display: block; padding: 12px 20px; color: #888; text-decoration: none; font-size: 0.7rem; transition: 0.3s; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; }
+        .drop-item:hover { background: var(--neon); color: #000; padding-left: 28px; }
+
+        /* HERO SECTION */
+        .hero { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; transform: translateZ(0); }
+        .badge { background: rgba(188, 19, 254, 0.08); color: var(--neon); padding: 8px 25px; border-radius: 4px; font-size: 0.65rem; letter-spacing: 6px; border: 1px solid var(--neon); margin-bottom: 25px; }
+        h1 { font-size: 4.5rem; letter-spacing: 20px; font-weight: 800; color: #fff; margin-bottom: 10px; text-transform: uppercase; }
+        .sub { color: var(--cyber); font-size: 0.9rem; letter-spacing: 8px; opacity: 0.7; margin-bottom: 50px; }
+
+        /* DOCK (PREMIUM) */
+        .dock { display: flex; gap: 25px; }
+        .dock-item {
+            width: 70px; height: 70px; border: 1px solid rgba(188, 19, 254, 0.2); border-radius: 12px;
+            display: grid; place-items: center; color: #fff; text-decoration: none; font-size: 1.5rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); background: rgba(255,255,255,0.01);
+        }
+        .dock-item:hover { transform: translateY(-15px) scale(1.1); background: var(--neon); color: #000; box-shadow: 0 15px 40px var(--neon); border-color: var(--neon); }
+        .dock-item.li:hover { background: #0077b5; box-shadow: 0 15px 40px #0077b5; border-color: #0077b5; color: #fff; }
+
+        /* MODAL PANEL (GELİŞTİRİLMİŞ) */
+        #info-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            display: none; justify-content: center; align-items: center; z-index: 2000;
+            backdrop-filter: blur(12px);
+        }
+        .modal-content {
+            width: 550px; background: rgba(15, 2, 25, 0.95); border: 1px solid var(--neon);
+            padding: 45px; position: relative; transform: translateY(30px); opacity: 0;
+            transition: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); box-shadow: 0 0 60px rgba(188, 19, 254, 0.1);
+        }
+        .modal-show { transform: translateY(0) !important; opacity: 1 !important; }
+        .modal-h { font-size: 1.2rem; color: var(--cyber); letter-spacing: 4px; margin-bottom: 25px; border-left: 3px solid var(--neon); padding-left: 15px; }
+        .modal-p { font-size: 0.85rem; color: #aaa; line-height: 1.8; margin-bottom: 30px; letter-spacing: 0.5px; }
+        .close-btn { position: absolute; top: 20px; right: 20px; color: #444; cursor: pointer; transition: 0.3s; }
+        .close-btn:hover { color: var(--neon); transform: rotate(90deg); }
+
+        footer { position: fixed; bottom: 25px; width: 100%; text-align: center; color: #333; font-size: 0.6rem; letter-spacing: 12px; }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix"></canvas>
+
+    <div id="loader">
+        <div class="auth-h">SİSTEME_GİRİŞ_YAPILIYOR</div>
+        <div class="p-wrap">
+            <div id="perc" style="position:absolute; right:0; top:-30px; color:var(--neon); font-size:0.9rem;">0%</div>
+            <div class="p-frame"><div class="p-bar" id="bar"></div></div>
+        </div>
+        <div id="console"></div>
+    </div>
+
+    <div id="site">
+        <header>
+            <div class="nav-grp">
+                <div class="nav-box">
+                    <a class="nav-link">SİSTEM_YÖNETİMİ</a>
+                    <div class="drop">
+                        <div class="drop-item" onclick="showInfo('Altyapı Mimarisi', 'Kurumsal ağ yapılarının tasarımı, segmentasyonu ve yüksek erişilebilirlik çözümleri konusunda uzman altyapı desteği.')">// Altyapı Mimarisi</div>
+                        <div class="drop-item" onclick="showInfo('Sunucu Yönetimi', 'Linux tabanlı sunucu optimizasyonu, sanallaştırma teknolojileri ve bulut entegrasyon süreçleri.')">// Sunucu Yönetimi</div>
+                    </div>
+                </div>
+                <div class="nav-box">
+                    <a class="nav-link">GÜVENLİK_MERKEZİ</a>
+                    <div class="drop">
+                        <div class="drop-item" onclick="showInfo('Sızma Testleri', 'Sistemlerdeki güvenlik açıklarını önceden tespit etmek için profesyonel pentest ve zafiyet tarama hizmetleri.')">// Sızma Testleri</div>
+                        <div class="drop-item" onclick="showInfo('Ağ Güvenliği', 'Firewall konfigürasyonu, IDS/IPS sistemleri ve uçtan uca veri şifreleme protokolleri.')">// Ağ Güvenliği</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="hero">
+            <div class="badge">ERİŞİM_DURUMU: KÖK_KULLANICI</div>
+            <h1>YİĞİT YAMANLAR</h1>
+            <p class="sub">> SENIOR DEVELOPER & NETWORK SECURITY ARCHITECT</p>
+            
+            <div class="dock">
+                <a href="https://github.com/YigitYamanlar" target="_blank" class="dock-item" title="GitHub"><i class="fab fa-github"></i></a>
+                <a href="https://www.linkedin.com/in/yi%C4%9Fit-yamanlar-a226223a3/" target="_blank" class="dock-item li" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <a href="mailto:yigityamanlar2707@gmail.com" class="dock-item" title="E-Posta"><i class="fas fa-envelope"></i></a>
+            </div>
+        </div>
+        <footer>REBORN_OS_ESTABLISHED_2026</footer>
+    </div>
+
+    <div id="info-modal" onclick="closeInfo()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="close-btn" onclick="closeInfo()"><i class="fas fa-times"></i></div>
+            <div id="modal-title" class="modal-h"></div>
+            <div id="modal-desc" class="modal-p"></div>
+            <div style="color: var(--neon); font-size: 0.65rem; letter-spacing: 2px;">>> ANALİZ_MODÜLÜ_TAMAMLANDI</div>
+        </div>
+    </div>
+
+    <script>
+        // Matrix Background
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        let w, h, cols, drops;
+        function init() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; cols = Math.floor(w/22); drops = Array(cols).fill(1); }
+        function draw() { ctx.fillStyle = "rgba(0,0,0,0.06)"; ctx.fillRect(0,0,w,h); ctx.fillStyle = "#bc13fe"; ctx.font = "14px monospace"; for(let i=0; i<drops.length; i++){ const txt = String.fromCharCode(0x30A0 + Math.random()*96); ctx.fillText(txt, i*22, drops[i]*22); if(drops[i]*22 > h && Math.random() > 0.985) drops[i] = 0; drops[i]++; } requestAnimationFrame(draw); }
+        init(); draw(); window.onresize = init;
+
+        // Modal Logic
+        function showInfo(title, desc) {
+            const m = document.getElementById('info-modal');
+            const c = m.querySelector('.modal-content');
+            document.getElementById('modal-title').innerText = "> " + title;
+            document.getElementById('modal-desc').innerText = desc;
+            m.style.display = 'flex';
+            requestAnimationFrame(() => c.classList.add('modal-show'));
+        }
+        function closeInfo() {
+            const c = document.querySelector('.modal-content');
+            c.classList.remove('modal-show');
+            setTimeout(() => document.getElementById('info-modal').style.display = 'none', 400);
+        }
+
+        // Mühürlü 4s Giriş (DOKUNMA)
+        const bar = document.getElementById('bar');
+        const perc = document.getElementById('perc');
+        const consoleOut = document.getElementById('console');
+        const logData = ["El sıkışma protokolü...", "SSL tüneli doğrulandı.", "Dinamik LinkedIn modülü yüklendi.", "Developer yetkileri onaylandı.", "Erişim yetkisi verildi.", "Sistem hazır."];
+        
+        let start = null;
+        function update(ts) {
+            if (!start) start = ts;
+            const progress = Math.min(((ts - start) / 4000) * 100, 100);
+            bar.style.width = progress + "%";
+            perc.innerText = Math.floor(progress) + "%";
+            const logIdx = Math.floor((progress / 100) * logData.length);
+            if (logIdx < logData.length && consoleOut.children.length <= logIdx) {
+                const l = document.createElement('div'); l.innerText = ">> " + logData[logIdx]; consoleOut.prepend(l);
+            }
+            if (progress < 100) requestAnimationFrame(update);
+            else {
+                setTimeout(() => {
+                    document.getElementById('loader').style.opacity = "0";
+                    setTimeout(() => {
+                        document.getElementById('loader').style.display = 'none';
+                        const site = document.getElementById('site');
+                        site.style.display = 'block';
+                        requestAnimationFrame(() => { site.style.opacity = "1"; site.style.transform = "scale(1)"; });
+                    }, 600);
+                }, 400);
+            }
+        }
+        requestAnimationFrame(update);
+    </script>
+</body>
+</html>
 
